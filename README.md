@@ -2,29 +2,11 @@
 
 🦀 Tiny Linear CLI for AI agents
 
-> Goal: Create issues without the 13k token overhead of full MCP integration.
+> Goal: Create issues without the 13k token overhead of full MCP integration
 
 <br>
 
-## Install
-
-**Binary**
-
-```bash
-curl -L https://github.com/kxzk/linearite/releases/latest/download/linearite-darwin -o linearite
-chmod +x linearite
-mv linearite /usr/local/bin/
-```
-
-**Source**
-
-```bash
-cargo install --git https://github.com/kxzk/linearite.git
-```
-
-<br>
-
-## Setup
+### Setup
 
 Get your API key: [linear.app/settings/api](https://linear.app/settings/api)
 
@@ -36,7 +18,7 @@ Add to `~/.zshrc` for persistence.
 
 <br>
 
-## Usage
+### Usage
 
 **Discovery**
 
@@ -57,3 +39,4 @@ linearite create "Add feature X" \
 ```
 
 Flags: `-t` team, `-d` description, `-p` project
+
