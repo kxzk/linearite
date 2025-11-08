@@ -1,10 +1,10 @@
 # linearite
 
-Minimal Linear CLI for AI agents.
+🦀 Tiny Linear CLI for AI agents
 
-Create issues without the 13k token overhead of full MCP integration.
+> Goal: Create issues without the 13k token overhead of full MCP integration.
 
----
+<br>
 
 ## Install
 
@@ -22,7 +22,7 @@ mv linearite /usr/local/bin/
 cargo install --git https://github.com/kxzk/linearite.git
 ```
 
----
+<br>
 
 ## Setup
 
@@ -34,7 +34,7 @@ export LINEAR_API_KEY="lin_api_..."
 
 Add to `~/.zshrc` for persistence.
 
----
+<br>
 
 ## Usage
 
@@ -57,9 +57,3 @@ linearite create "Add feature X" \
 ```
 
 Flags: `-t` team, `-d` description, `-p` project
-
----
-
-## License
-
-MIT
