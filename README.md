@@ -1,74 +1,65 @@
 # linearite
-🦀 Tiny Linear CLI designed for AI agents
 
-> Goal: Create issues without the 13k token tax of full MCP integration
+Minimal Linear CLI for AI agents.
 
-<br>
+Create issues without the 13k token overhead of full MCP integration.
 
-### Installation
+---
 
-**Download Pre-built Binary**
+## Install
 
-Download the latest release from [GitHub Releases](https://github.com/kxzk/linearite/releases):
+**Binary**
 
 ```bash
-# Download for your Mac (Apple Silicon or Intel)
-# Then make it executable and move to PATH
-chmod +x linearite-*
-sudo mv linearite-* /usr/local/bin/linearite
+curl -L https://github.com/kxzk/linearite/releases/latest/download/linearite-darwin -o linearite
+chmod +x linearite
+mv linearite /usr/local/bin/
 ```
 
-**From Source**
+**Source**
 
 ```bash
 cargo install --git https://github.com/kxzk/linearite.git
 ```
 
-<br>
+---
 
-### Setup
+## Setup
 
-1. Get your Linear API key from [Linear Settings > API](https://linear.app/settings/api)
-2. Set the environment variable:
-   ```bash
-   export LINEAR_API_KEY="your-api-key-here"
-   # Or add to ~/.zshrc
-   echo 'export LINEAR_API_KEY="your-api-key-here"' >> ~/.zshrc
-   ```
+Get your API key: [linear.app/settings/api](https://linear.app/settings/api)
 
-<br>
+```bash
+export LINEAR_API_KEY="lin_api_..."
+```
 
-### Usage
+Add to `~/.zshrc` for persistence.
 
-**List Teams**
+---
+
+## Usage
+
+**Discovery**
 
 ```bash
 linearite list-teams
-```
-
-**List Projects**
-
-```bash
 linearite list-projects
 ```
 
-**Create an Issue**
+**Create Issues**
 
 ```bash
-# Basic issue
-linearite create "Fix bug in API" --team-id team-abc123
+linearite create "Fix API bug" --team-id team-abc123
 
-# With description
-linearite create "Fix bug in API" \
+linearite create "Add feature X" \
   --team-id team-abc123 \
-  --description "The API is broken"
-
-# With description and project
-linearite create "Add feature" \
-  --team-id team-abc123 \
-  --description "Implement feature X" \
+  --description "Detailed context" \
   --project-id proj-xyz789
-
-# Using short flags
-linearite create "Test issue" -t team-abc123 -d "Description" -p proj-xyz789
 ```
+
+Flags: `-t` team, `-d` description, `-p` project
+
+---
+
+## License
+
+MIT
