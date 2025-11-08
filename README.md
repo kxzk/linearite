@@ -3,6 +3,8 @@
 
 > Goal: Create issues without the 13k token tax of full MCP integration
 
+<br>
+
 ### Installation
 
 **Download Pre-built Binary**
@@ -22,6 +24,8 @@ sudo mv linearite-* /usr/local/bin/linearite
 cargo install --git https://github.com/kxzk/linearite.git
 ```
 
+<br>
+
 ### Setup
 
 1. Get your Linear API key from [Linear Settings > API](https://linear.app/settings/api)
@@ -31,6 +35,8 @@ cargo install --git https://github.com/kxzk/linearite.git
    # Or add to ~/.zshrc
    echo 'export LINEAR_API_KEY="your-api-key-here"' >> ~/.zshrc
    ```
+
+<br>
 
 ### Usage
 
