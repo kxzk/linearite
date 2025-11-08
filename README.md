@@ -3,9 +3,9 @@
 
 > Goal: Create issues without the 13k token tax of full MCP integration
 
-## Installation
+### Installation
 
-### Download Pre-built Binary
+**Download Pre-built Binary**
 
 Download the latest release from [GitHub Releases](https://github.com/kxzk/linearite/releases):
 
@@ -16,13 +16,13 @@ chmod +x linearite-*
 sudo mv linearite-* /usr/local/bin/linearite
 ```
 
-### From Source
+**From Source**
 
 ```bash
 cargo install --git https://github.com/kxzk/linearite.git
 ```
 
-## Setup
+### Setup
 
 1. Get your Linear API key from [Linear Settings > API](https://linear.app/settings/api)
 2. Set the environment variable:
@@ -32,21 +32,21 @@ cargo install --git https://github.com/kxzk/linearite.git
    echo 'export LINEAR_API_KEY="your-api-key-here"' >> ~/.zshrc
    ```
 
-## Usage
+### Usage
 
-### List Teams
+**List Teams**
 
 ```bash
 linearite list-teams
 ```
 
-### List Projects
+**List Projects**
 
 ```bash
 linearite list-projects
 ```
 
-### Create an Issue
+**Create an Issue**
 
 ```bash
 # Basic issue
