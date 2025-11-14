@@ -8,7 +8,6 @@ pub async fn handle_create(
     team_id: &str,
     project_id: &Option<String>,
 ) -> Result<(), Box<dyn std::error::Error>> {
-
     let mutation = r#"
         mutation IssueCreate($input: IssueCreateInput!) {
             issueCreate(input: $input) {
@@ -17,6 +16,7 @@ pub async fn handle_create(
                     id
                     title
                     url
+                    branchName
                 }
             }
         }
@@ -32,13 +32,18 @@ pub async fn handle_create(
     });
 
     let data = api::query_linear::<IssueCreateResponse>(mutation, Some(variables)).await?;
-    
+
     if data.issue_create.success {
         if let Some(issue) = data.issue_create.issue {
             println!("issue created!");
             println!("id: {}", issue.id);
             println!("title: {}", issue.title);
             println!("url: {}", issue.url);
+            if let Some(branch_name) = &issue.branch_name {
+                println!("branch name: {}", branch_name);
+            } else {
+                println!("branch name: not available");
+            }
         } else {
             eprintln!("[warning] issue creation reported success but no issue data returned");
         }
@@ -50,33 +55,38 @@ pub async fn handle_create(
 }
 
 pub async fn handle_list_teams() -> Result<(), Box<dyn std::error::Error>> {
-    let data = api::query_linear::<TeamsResponse>("query Teams { teams { nodes { id name } } }", None).await?;
-    
+    let data =
+        api::query_linear::<TeamsResponse>("query Teams { teams { nodes { id name } } }", None)
+            .await?;
+
     for team in data.teams.nodes {
         println!("{}\t{}", team.name, team.id);
     }
-    
+
     Ok(())
 }
 
 pub async fn handle_list_projects() -> Result<(), Box<dyn std::error::Error>> {
-    let data = api::query_linear::<ProjectsResponse>("query Projects { projects { nodes { id name } } }", None).await?;
-    
+    let data = api::query_linear::<ProjectsResponse>(
+        "query Projects { projects { nodes { id name } } }",
+        None,
+    )
+    .await?;
+
     for project in data.projects.nodes {
         println!("{}\t{}", project.name, project.id);
     }
-    
+
     Ok(())
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::types::{IssueCreateResponse, IssuePayload, Issue};
+    use crate::types::{Issue, IssueCreateResponse, IssuePayload};
     use serde_json::json;
 
     #[tokio::test]
     async fn test_handle_create_success() {
-        
         // Temporarily override the API URL by modifying the API module
         // Since we can't easily inject dependencies, we'll test the variable construction
         let title = "Test Issue";
@@ -133,6 +143,7 @@ mod tests {
                     id: "issue-123".to_string(),
                     title: "Test".to_string(),
                     url: "https://linear.app/issue-123".to_string(),
+                    branch_name: Some("test-branch".to_string()),
                 }),
             },
         };
@@ -159,6 +170,63 @@ mod tests {
     }
 
     #[test]
+    fn test_issue_with_branch_name() {
+        let response_with_branch = IssueCreateResponse {
+            issue_create: IssuePayload {
+                success: true,
+                issue: Some(Issue {
+                    id: "issue-456".to_string(),
+                    title: "Feature Issue".to_string(),
+                    url: "https://linear.app/issue-456".to_string(),
+                    branch_name: Some("feat/issue-456-feature-issue".to_string()),
+                }),
+            },
+        };
+
+        assert!(response_with_branch.issue_create.success);
+        let issue = response_with_branch.issue_create.issue.unwrap();
+        assert_eq!(issue.branch_name, Some("feat/issue-456-feature-issue".to_string()));
+    }
+
+    #[test]
+    fn test_issue_without_branch_name() {
+        let response_no_branch = IssueCreateResponse {
+            issue_create: IssuePayload {
+                success: true,
+                issue: Some(Issue {
+                    id: "issue-789".to_string(),
+                    title: "Bug Issue".to_string(),
+                    url: "https://linear.app/issue-789".to_string(),
+                    branch_name: None,
+                }),
+            },
+        };
+
+        assert!(response_no_branch.issue_create.success);
+        let issue = response_no_branch.issue_create.issue.unwrap();
+        assert!(issue.branch_name.is_none());
+    }
+
+    #[test]
+    fn test_create_mutation_includes_branch_name() {
+        let mutation = r#"
+        mutation IssueCreate($input: IssueCreateInput!) {
+            issueCreate(input: $input) {
+                success
+                issue {
+                    id
+                    title
+                    url
+                    branchName
+                }
+            }
+        }
+    "#;
+
+        assert!(mutation.contains("branchName"));
+    }
+
+    #[test]
     fn test_handle_list_teams_variable_construction() {
         // Test that the query is constructed correctly
         let query = "query Teams { teams { nodes { id name } } }";
@@ -178,4 +246,3 @@ mod tests {
         assert!(query.contains("name"));
     }
 }
-

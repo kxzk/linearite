@@ -71,12 +71,20 @@ mod tests {
 
     #[test]
     fn test_get_api_key_failure() {
+        let original_key = std::env::var("LINEAR_API_KEY").ok();
         unsafe {
             std::env::remove_var("LINEAR_API_KEY");
         }
         let result = get_api_key();
         assert!(result.is_err());
         assert!(result.unwrap_err().contains("LINEAR_API_KEY"));
+
+        // Restore original key if it existed
+        if let Some(key) = original_key {
+            unsafe {
+                std::env::set_var("LINEAR_API_KEY", key);
+            }
+        }
     }
 
     #[tokio::test]
