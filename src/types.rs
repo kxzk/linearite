@@ -58,11 +58,13 @@ pub struct IssuePayload {
     pub issue: Option<Issue>,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Serialize)]
 pub struct Issue {
     pub id: String,
     pub title: String,
     pub url: String,
+    #[serde(rename = "branchName")]
+    pub branch_name: Option<String>,
 }
 
 #[cfg(test)]
@@ -84,7 +86,9 @@ mod tests {
     #[test]
     fn test_graphql_request_with_variables() {
         let request = GraphQLRequest {
-            query: Cow::Borrowed("mutation IssueCreate($input: IssueCreateInput!) { issueCreate(input: $input) { success } }"),
+            query: Cow::Borrowed(
+                "mutation IssueCreate($input: IssueCreateInput!) { issueCreate(input: $input) { success } }",
+            ),
             variables: Some(json!({
                 "input": {
                     "teamId": "team-123",
@@ -139,7 +143,8 @@ mod tests {
                 "issue": {
                     "id": "issue-123",
                     "title": "Test Issue",
-                    "url": "https://linear.app/issue-123"
+                    "url": "https://linear.app/issue-123",
+                    "branchName": "test-issue-123"
                 }
             }
         });
@@ -150,6 +155,7 @@ mod tests {
         assert_eq!(issue.id, "issue-123");
         assert_eq!(issue.title, "Test Issue");
         assert_eq!(issue.url, "https://linear.app/issue-123");
+        assert_eq!(issue.branch_name, Some("test-issue-123".to_string()));
     }
 
     #[test]
@@ -163,6 +169,58 @@ mod tests {
         let response: IssueCreateResponse = serde_json::from_value(json).unwrap();
         assert!(!response.issue_create.success);
         assert!(response.issue_create.issue.is_none());
+    }
+
+    #[test]
+    fn test_issue_deserialization_without_branch_name() {
+        let json = json!({
+            "issueCreate": {
+                "success": true,
+                "issue": {
+                    "id": "issue-no-branch",
+                    "title": "Issue without branch",
+                    "url": "https://linear.app/issue-no-branch"
+                }
+            }
+        });
+        let response: IssueCreateResponse = serde_json::from_value(json).unwrap();
+        assert!(response.issue_create.success);
+        assert!(response.issue_create.issue.is_some());
+        let issue = response.issue_create.issue.unwrap();
+        assert_eq!(issue.id, "issue-no-branch");
+        assert_eq!(issue.branch_name, None);
+    }
+
+    #[test]
+    fn test_issue_serialization_with_branch_name() {
+        let issue = Issue {
+            id: "test-id".to_string(),
+            title: "Test Title".to_string(),
+            url: "https://linear.app/test".to_string(),
+            branch_name: Some("feat/test-branch".to_string()),
+        };
+
+        let json = serde_json::to_value(&issue).unwrap();
+        assert_eq!(json["id"], "test-id");
+        assert_eq!(json["title"], "Test Title");
+        assert_eq!(json["url"], "https://linear.app/test");
+        assert_eq!(json["branchName"], "feat/test-branch");
+    }
+
+    #[test]
+    fn test_issue_serialization_without_branch_name() {
+        let issue = Issue {
+            id: "test-id".to_string(),
+            title: "Test Title".to_string(),
+            url: "https://linear.app/test".to_string(),
+            branch_name: None,
+        };
+
+        let json = serde_json::to_value(&issue).unwrap();
+        assert_eq!(json["id"], "test-id");
+        assert_eq!(json["title"], "Test Title");
+        assert_eq!(json["url"], "https://linear.app/test");
+        assert!(json["branchName"].is_null());
     }
 
     #[test]
@@ -181,4 +239,3 @@ mod tests {
         assert_eq!(response.data.teams.nodes[0].name, "Engineering");
     }
 }
-
