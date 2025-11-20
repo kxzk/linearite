@@ -40,10 +40,8 @@ main() {
 
     if [ "$os" = "pc-windows-msvc" ]; then
         filename="${BINARY_NAME}-${target}.exe"
-        is_windows=1
     else
-        filename="${BINARY_NAME}-${VERSION}-${target}.tar.gz"
-        is_windows=0
+        filename="${BINARY_NAME}-${target}"
     fi
 
     url="https://github.com/${REPO}/releases/download/${VERSION}/${filename}"
@@ -56,20 +54,15 @@ main() {
     cd "$tmpdir"
 
     if command -v curl > /dev/null 2>&1; then
-        curl -fsSL "$url" -o "$filename"
+        curl -fsSL "$url" -o "$BINARY_NAME"
     elif command -v wget > /dev/null 2>&1; then
-        wget -q "$url"
+        wget -q "$url" -O "$BINARY_NAME"
     else
         print_red "Error: curl or wget required" >&2
         exit 1
     fi
 
-    if [ $is_windows -eq 1 ]; then
-        binary_file="$filename"
-    else
-        tar xzf "$filename"
-        binary_file="$BINARY_NAME"
-    fi
+    binary_file="$BINARY_NAME"
 
     install_dir="/usr/local/bin"
     if [ -w "$install_dir" ]; then
