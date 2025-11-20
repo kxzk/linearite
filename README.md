@@ -6,6 +6,14 @@
 
 <br>
 
+### Installation
+
+```bash
+curl -sSL https://raw.githubusercontent.com/kxzk/linearite/refs/heads/main/install.sh | sh
+```
+
+<br>
+
 ### Setup
 
 Get your API key: [linear.app/settings/api](https://linear.app/settings/api)
