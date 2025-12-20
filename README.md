@@ -9,7 +9,7 @@
 ### Installation
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/kxzk/linearite/refs/heads/main/install.sh | sh
+curl -fsSL https://kade.work/linearite/install | bash
 ```
 
 <br>
