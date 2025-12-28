@@ -76,7 +76,19 @@ pub async fn fetch_all_completed_issues(
             break;
         }
 
-        cursor = data.issues.page_info.end_cursor;
+        // Defensive check: if `has_next_page` is true but `end_cursor` is None,
+        // this indicates an API inconsistency - break to avlid infinite loop
+        let next_cursor = match data.issues.page_info.end_cursor {
+            Some(c) => c,
+            None => {
+                eprintln!(
+                    "Warning: API returned has_next_page=true but end_cursor=None. Stopping pagination."
+                );
+                break;
+            }
+        };
+
+        cursor = Some(next_cursor);
     }
 
     Ok(all_issues)
