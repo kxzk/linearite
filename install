@@ -2,7 +2,7 @@
 
 set -e
 
-VERSION="v0.1.1"
+VERSION="v0.2.1"
 REPO="kxzk/linearite"
 BINARY_NAME="linearite"
 
@@ -39,7 +39,7 @@ main() {
 
     url="https://github.com/${REPO}/releases/download/${VERSION}/${filename}"
 
-    echo "🦀 Installing Linearite ${VERSION} for ${target}..."
+    echo "◉ Linearite | Installing ${VERSION} for ${target}..."
 
     tmpdir=$(mktemp -d)
     trap 'rm -rf "$tmpdir"' EXIT
@@ -60,18 +60,18 @@ main() {
     install_dir="/usr/local/bin"
     if [ -w "$install_dir" ]; then
         mv "$binary_file" "$install_dir/$BINARY_NAME"
-        echo "🦀 Installed to ${install_dir}/${BINARY_NAME}"
+        echo "◉ Linearite | Installed to ${install_dir}/${BINARY_NAME}"
     else
-        echo "🦀 Installing to ${install_dir} (requires sudo)..."
+        echo "◉ Linearite | Installing to ${install_dir} (requires sudo)..."
         sudo mv "$binary_file" "$install_dir/$BINARY_NAME"
     fi
 
     chmod +x "${install_dir}/${BINARY_NAME}"
 
     if command -v "$BINARY_NAME" > /dev/null 2>&1; then
-        echo "🦀 Success! Run '${BINARY_NAME} help' to get started."
+        echo "◉ Linearite | Success! Run '${BINARY_NAME} help' to get started."
     else
-        echo "🦀 Installed but ${install_dir} may not be in PATH"
+        echo "◉ Linearite | Installed but ${install_dir} may not be in PATH"
         echo "Add to PATH or move binary to a directory in PATH"
     fi
 }
