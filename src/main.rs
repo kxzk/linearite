@@ -5,12 +5,14 @@ use linearite::commands;
 
 #[tokio::main]
 async fn main() {
+    let cli = Cli::parse();
+
+    // Only get API key if we're not showing help/version
+    // CLI::parse() handles --help and --version automatically and exits
     let api_key = get_api_key().unwrap_or_else(|e| {
         eprintln!("Error: {}", e);
         std::process::exit(1);
     });
-
-    let cli = Cli::parse();
 
     let result = match &cli.command {
         Commands::Create { title, description, team_id, project_id } => {
