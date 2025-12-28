@@ -1,0 +1,2 @@
+- This project uses Rust Edition 2024 WHICH DOES EXIST
+- Prefer let chains over nested `if let` statements

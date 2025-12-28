@@ -1,10 +1,11 @@
+use crate::utils::{format_option_assignee, format_option_f64, format_option_team};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use std::borrow::Cow;
+use tabled::Tabled;
 
 #[derive(Serialize)]
-pub struct GraphQLRequest<'a> {
-    pub query: Cow<'a, str>,
+pub struct GraphQLRequest {
+    pub query: &'static str,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub variables: Option<Value>,
 }
@@ -24,10 +25,12 @@ pub struct TeamsData {
     pub nodes: Vec<Team>,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Tabled)]
 pub struct Team {
-    pub id: String,
+    #[tabled(rename = "Team Name")]
     pub name: String,
+    #[tabled(rename = "Team ID")]
+    pub id: String,
 }
 
 #[derive(Deserialize)]
@@ -40,10 +43,12 @@ pub struct ProjectsData {
     pub nodes: Vec<Project>,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Tabled)]
 pub struct Project {
-    pub id: String,
+    #[tabled(rename = "Project Name")]
     pub name: String,
+    #[tabled(rename = "Project ID")]
+    pub id: String,
 }
 
 #[derive(Deserialize)]
@@ -67,6 +72,66 @@ pub struct Issue {
     pub branch_name: Option<String>,
 }
 
+#[derive(Deserialize)]
+pub struct CompletedIssuesResponse {
+    pub issues: IssuesData,
+}
+
+#[derive(Deserialize)]
+pub struct IssuesData {
+    pub nodes: Vec<CompletedIssue>,
+    #[serde(rename = "pageInfo")]
+    pub page_info: PageInfo,
+}
+
+#[derive(Deserialize, Tabled)]
+pub struct CompletedIssue {
+    #[tabled(display = "format_option_f64")]
+    pub estimate: Option<f64>,
+    #[tabled(display = "format_option_assignee")]
+    pub assignee: Option<Assignee>,
+    #[tabled(display = "format_option_team")]
+    pub team: Option<Team>,
+}
+
+#[derive(Deserialize, Tabled)]
+pub struct Assignee {
+    pub id: String,
+    pub name: String,
+}
+
+#[derive(Deserialize)]
+pub struct PageInfo {
+    #[serde(rename = "hasNextPage")]
+    pub has_next_page: bool,
+    #[serde(rename = "endCursor")]
+    pub end_cursor: Option<String>,
+}
+
+#[derive(Tabled)]
+pub struct RankedTeam {
+    #[tabled(rename = "Rank")]
+    pub rank: usize,
+    #[tabled(rename = "Team Name")]
+    pub name: String,
+    #[tabled(rename = "Team Points")]
+    pub total_points: f64,
+    #[tabled(rename = "Issues Completed")]
+    pub issue_count: usize,
+}
+
+#[derive(Tabled)]
+pub struct RankedUser {
+    #[tabled(rename = "Rank")]
+    pub rank: usize,
+    #[tabled(rename = "User Name")]
+    pub name: String,
+    #[tabled(rename = "User Points")]
+    pub total_points: f64,
+    #[tabled(rename = "Issues Completed")]
+    pub issue_count: usize,
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -74,10 +139,8 @@ mod tests {
 
     #[test]
     fn test_graphql_request_serialization() {
-        let request = GraphQLRequest {
-            query: Cow::Borrowed("query { teams { nodes { id name } } }"),
-            variables: None,
-        };
+        let request =
+            GraphQLRequest { query: "query { teams { nodes { id name } } }", variables: None };
         let json = serde_json::to_string(&request).unwrap();
         assert!(json.contains("query"));
         assert!(json.contains("teams"));
@@ -86,9 +149,7 @@ mod tests {
     #[test]
     fn test_graphql_request_with_variables() {
         let request = GraphQLRequest {
-            query: Cow::Borrowed(
-                "mutation IssueCreate($input: IssueCreateInput!) { issueCreate(input: $input) { success } }",
-            ),
+            query: "mutation IssueCreate($input: IssueCreateInput!) { issueCreate(input: $input) { success } }",
             variables: Some(json!({
                 "input": {
                     "teamId": "team-123",
