@@ -52,6 +52,7 @@ pub enum Commands {
         #[arg(short = 't', long = "top", default_value = "10")]
         top: usize,
     },
+    /// Rank users by completed issue points
     RankUsers {
         /// Rank users by completed issue points since this date (DateTimeOrDuration format, e.g.,
         /// "7d", "30d", "2025-12-27")
@@ -199,15 +200,8 @@ mod tests {
 
     #[test]
     fn test_cli_parse_rank_teams_custom_values() {
-        let cli = Cli::try_parse_from(&[
-            "linearite",
-            "rank-teams",
-            "--since",
-            "30d",
-            "--top",
-            "5",
-        ])
-        .unwrap();
+        let cli = Cli::try_parse_from(&["linearite", "rank-teams", "--since", "30d", "--top", "5"])
+            .unwrap();
         match cli.command {
             Commands::RankTeams { since, top } => {
                 assert_eq!(since, "30d");
@@ -263,15 +257,9 @@ mod tests {
 
     #[test]
     fn test_cli_parse_rank_users_custom_values() {
-        let cli = Cli::try_parse_from(&[
-            "linearite",
-            "rank-users",
-            "--since",
-            "60d",
-            "--top",
-            "15",
-        ])
-        .unwrap();
+        let cli =
+            Cli::try_parse_from(&["linearite", "rank-users", "--since", "60d", "--top", "15"])
+                .unwrap();
         match cli.command {
             Commands::RankUsers { since, top } => {
                 assert_eq!(since, "60d");
@@ -283,7 +271,8 @@ mod tests {
 
     #[test]
     fn test_cli_parse_rank_users_short_flags() {
-        let cli = Cli::try_parse_from(&["linearite", "rank-users", "-s", "21d", "-t", "8"]).unwrap();
+        let cli =
+            Cli::try_parse_from(&["linearite", "rank-users", "-s", "21d", "-t", "8"]).unwrap();
         match cli.command {
             Commands::RankUsers { since, top } => {
                 assert_eq!(since, "21d");
@@ -315,14 +304,8 @@ mod tests {
 
     #[test]
     fn test_cli_parse_create_with_short_team_flag() {
-        let cli = Cli::try_parse_from(&[
-            "linearite",
-            "create",
-            "Test Issue",
-            "-t",
-            "team-short",
-        ])
-        .unwrap();
+        let cli = Cli::try_parse_from(&["linearite", "create", "Test Issue", "-t", "team-short"])
+            .unwrap();
         match cli.command {
             Commands::Create { title, team_id, .. } => {
                 assert_eq!(title, "Test Issue");

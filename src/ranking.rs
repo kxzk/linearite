@@ -12,7 +12,8 @@ pub trait Ranked {
 
 impl Ranked for RankedTeam {
     fn total_points(&self) -> f64 {
-        self.total_points
+        // Return 0.0 if `total_points` is NaN
+        self.total_points.max(0.0)
     }
 
     fn set_rank(&mut self, rank: usize) {
@@ -22,7 +23,7 @@ impl Ranked for RankedTeam {
 
 impl Ranked for RankedUser {
     fn total_points(&self) -> f64 {
-        self.total_points
+        self.total_points.max(0.0)
     }
 
     fn set_rank(&mut self, rank: usize) {
@@ -51,7 +52,7 @@ impl From<(String, f64, usize)> for RankedUser {
 // Fetches all completed issues with pagination
 pub async fn fetch_all_completed_issues(
     api_key: &str,
-    since_date: String,
+    since_date: &str,
 ) -> Result<Vec<CompletedIssue>, Box<dyn std::error::Error>> {
     let mut all_issues = Vec::new();
     let mut cursor: Option<String> = None;
@@ -119,7 +120,7 @@ where
 /// Ranks teams by completed issue points
 pub async fn rank_teams(
     api_key: &str,
-    since_date: String,
+    since_date: &str,
     top: usize,
 ) -> Result<String, Box<dyn std::error::Error>> {
     let all_issues = fetch_all_completed_issues(api_key, since_date).await?;
@@ -136,7 +137,7 @@ pub async fn rank_teams(
 /// Ranks users by completed issue points
 pub async fn rank_users(
     api_key: &str,
-    since_date: String,
+    since_date: &str,
     top: usize,
 ) -> Result<String, Box<dyn std::error::Error>> {
     let all_issues = fetch_all_completed_issues(api_key, since_date).await?;
@@ -205,9 +206,11 @@ mod tests {
             Some(Assignee { id: "user-1".to_string(), name: "Alice".to_string() }),
         )];
 
-        let ranked: Vec<RankedTeam> = rank_by_points(issues, |issue| {
-            issue.team.as_ref().map(|t| (t.id.clone(), t.name.clone()))
-        }, 10);
+        let ranked: Vec<RankedTeam> = rank_by_points(
+            issues,
+            |issue| issue.team.as_ref().map(|t| (t.id.clone(), t.name.clone())),
+            10,
+        );
 
         assert_eq!(ranked.len(), 1);
         assert_eq!(ranked[0].name, "Engineering");
@@ -288,9 +291,11 @@ mod tests {
             ),
         ];
 
-        let ranked: Vec<RankedTeam> = rank_by_points(issues, |issue| {
-            issue.team.as_ref().map(|t| (t.id.clone(), t.name.clone()))
-        }, 10);
+        let ranked: Vec<RankedTeam> = rank_by_points(
+            issues,
+            |issue| issue.team.as_ref().map(|t| (t.id.clone(), t.name.clone())),
+            10,
+        );
 
         assert_eq!(ranked.len(), 1);
         assert_eq!(ranked[0].total_points, 5.0);
@@ -317,9 +322,11 @@ mod tests {
             ),
         ];
 
-        let ranked: Vec<RankedTeam> = rank_by_points(issues, |issue| {
-            issue.team.as_ref().map(|t| (t.id.clone(), t.name.clone()))
-        }, 10);
+        let ranked: Vec<RankedTeam> = rank_by_points(
+            issues,
+            |issue| issue.team.as_ref().map(|t| (t.id.clone(), t.name.clone())),
+            10,
+        );
 
         assert_eq!(ranked.len(), 2);
         assert_eq!(ranked[0].name, "Team A");
@@ -352,9 +359,11 @@ mod tests {
             ),
         ];
 
-        let ranked: Vec<RankedTeam> = rank_by_points(issues, |issue| {
-            issue.team.as_ref().map(|t| (t.id.clone(), t.name.clone()))
-        }, 10);
+        let ranked: Vec<RankedTeam> = rank_by_points(
+            issues,
+            |issue| issue.team.as_ref().map(|t| (t.id.clone(), t.name.clone())),
+            10,
+        );
 
         assert_eq!(ranked.len(), 1);
         assert_eq!(ranked[0].name, "Team A");
@@ -378,9 +387,11 @@ mod tests {
             ),
         ];
 
-        let ranked: Vec<RankedTeam> = rank_by_points(issues, |issue| {
-            issue.team.as_ref().map(|t| (t.id.clone(), t.name.clone()))
-        }, 10);
+        let ranked: Vec<RankedTeam> = rank_by_points(
+            issues,
+            |issue| issue.team.as_ref().map(|t| (t.id.clone(), t.name.clone())),
+            10,
+        );
 
         assert_eq!(ranked.len(), 1);
         assert_eq!(ranked[0].total_points, 13.0);
@@ -403,9 +414,11 @@ mod tests {
             ),
         ];
 
-        let ranked: Vec<RankedUser> = rank_by_points(issues, |issue| {
-            issue.assignee.as_ref().map(|a| (a.id.clone(), a.name.clone()))
-        }, 10);
+        let ranked: Vec<RankedUser> = rank_by_points(
+            issues,
+            |issue| issue.assignee.as_ref().map(|a| (a.id.clone(), a.name.clone())),
+            10,
+        );
 
         assert_eq!(ranked.len(), 1);
         assert_eq!(ranked[0].name, "Alice");
@@ -416,9 +429,11 @@ mod tests {
     #[test]
     fn test_rank_by_points_empty_input() {
         let issues: Vec<CompletedIssue> = vec![];
-        let ranked: Vec<RankedTeam> = rank_by_points(issues, |issue| {
-            issue.team.as_ref().map(|t| (t.id.clone(), t.name.clone()))
-        }, 10);
+        let ranked: Vec<RankedTeam> = rank_by_points(
+            issues,
+            |issue| issue.team.as_ref().map(|t| (t.id.clone(), t.name.clone())),
+            10,
+        );
 
         assert_eq!(ranked.len(), 0);
     }
@@ -427,13 +442,19 @@ mod tests {
     fn test_rank_by_points_all_filtered_out() {
         let issues = vec![
             create_test_issue(None, None, None),
-            create_test_issue(None, Some(Team { id: "team-1".to_string(), name: "Team A".to_string() }), None),
+            create_test_issue(
+                None,
+                Some(Team { id: "team-1".to_string(), name: "Team A".to_string() }),
+                None,
+            ),
             create_test_issue(Some(0.0), None, None),
         ];
 
-        let ranked: Vec<RankedTeam> = rank_by_points(issues, |issue| {
-            issue.team.as_ref().map(|t| (t.id.clone(), t.name.clone()))
-        }, 10);
+        let ranked: Vec<RankedTeam> = rank_by_points(
+            issues,
+            |issue| issue.team.as_ref().map(|t| (t.id.clone(), t.name.clone())),
+            10,
+        );
 
         assert_eq!(ranked.len(), 0);
     }
@@ -463,9 +484,11 @@ mod tests {
             ),
         ];
 
-        let ranked: Vec<RankedTeam> = rank_by_points(issues, |issue| {
-            issue.team.as_ref().map(|t| (t.id.clone(), t.name.clone()))
-        }, 2);
+        let ranked: Vec<RankedTeam> = rank_by_points(
+            issues,
+            |issue| issue.team.as_ref().map(|t| (t.id.clone(), t.name.clone())),
+            2,
+        );
 
         assert_eq!(ranked.len(), 2);
         assert_eq!(ranked[0].name, "Team A");
@@ -492,9 +515,11 @@ mod tests {
             ),
         ];
 
-        let ranked: Vec<RankedTeam> = rank_by_points(issues, |issue| {
-            issue.team.as_ref().map(|t| (t.id.clone(), t.name.clone()))
-        }, 10);
+        let ranked: Vec<RankedTeam> = rank_by_points(
+            issues,
+            |issue| issue.team.as_ref().map(|t| (t.id.clone(), t.name.clone())),
+            10,
+        );
 
         assert_eq!(ranked.len(), 3);
         assert_eq!(ranked[0].name, "Team B");
@@ -525,9 +550,11 @@ mod tests {
             ),
         ];
 
-        let ranked: Vec<RankedTeam> = rank_by_points(issues, |issue| {
-            issue.team.as_ref().map(|t| (t.id.clone(), t.name.clone()))
-        }, 10);
+        let ranked: Vec<RankedTeam> = rank_by_points(
+            issues,
+            |issue| issue.team.as_ref().map(|t| (t.id.clone(), t.name.clone())),
+            10,
+        );
 
         assert_eq!(ranked.len(), 1);
         // 1.1 + 2.2 + 3.3 = 6.6
@@ -550,9 +577,11 @@ mod tests {
             ),
         ];
 
-        let ranked: Vec<RankedTeam> = rank_by_points(issues, |issue| {
-            issue.team.as_ref().map(|t| (t.id.clone(), t.name.clone()))
-        }, 10);
+        let ranked: Vec<RankedTeam> = rank_by_points(
+            issues,
+            |issue| issue.team.as_ref().map(|t| (t.id.clone(), t.name.clone())),
+            10,
+        );
 
         assert_eq!(ranked.len(), 2);
         assert_eq!(ranked[0].total_points, 5.0);

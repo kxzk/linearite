@@ -13,9 +13,6 @@ pub fn get_api_key() -> Result<String, String> {
 #[derive(Deserialize)]
 struct GraphQLErrorResponse {
     pub errors: Option<Vec<GraphQLError>>,
-    #[serde(skip)]
-    #[allow(dead_code)]
-    pub data: Option<Value>,
 }
 
 #[derive(Deserialize)]

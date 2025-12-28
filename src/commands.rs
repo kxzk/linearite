@@ -73,7 +73,7 @@ pub async fn handle_rank_teams(
     top: usize,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let since_date = parse_since(since)?;
-    let table = ranking::rank_teams(api_key, since_date, top).await?;
+    let table = ranking::rank_teams(api_key, &since_date, top).await?;
     println!("{table}");
     Ok(())
 }
@@ -84,7 +84,7 @@ pub async fn handle_rank_users(
     top: usize,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let since_date = parse_since(since)?;
-    let table = ranking::rank_users(api_key, since_date, top).await?;
+    let table = ranking::rank_users(api_key, &since_date, top).await?;
     println!("{table}");
     Ok(())
 }

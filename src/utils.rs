@@ -37,23 +37,26 @@ pub fn format_option_team(opt: &Option<crate::types::Team>) -> String {
 /// Converts a duration string (e.g., "7d", "14d", "30d") or date string to ISO 8601 format
 /// that Linear's DateTimeOrDuration type expects.
 pub fn parse_since(since: &str) -> Result<String, Box<dyn std::error::Error>> {
-    if let Some(days) = since.strip_suffix('d')
-        && let Ok(days) = days.parse::<i64>()
+    let now = Utc::now();
+    let parsed_date: DateTime<Utc>;
+
+    if let Some(days_str) = since.strip_suffix('d')
+        && let Ok(days) = days_str.parse::<i64>()
     {
-        let date = Utc::now() - Duration::days(days);
-        return Ok(date.to_rfc3339());
+        // Reject negative durations (e.g., "-7d") as they're confusing
+        if days < 0 {
+            return Err(format!("Negative durations like '{}' are not allowed. Use positive durations (e.g., '7d') or explicit dates.", since).into());
+        }
+        parsed_date = now - Duration::days(days);
+    } else if let Ok(dt) = DateTime::parse_from_rfc3339(since) {
+        parsed_date = dt.with_timezone(&Utc);
+    } else if let Ok(date) = chrono::NaiveDate::parse_from_str(since, "%Y-%m-%d") {
+        parsed_date = date.and_hms_opt(0, 0, 0).ok_or("Invalid date")?.and_utc();
+    } else {
+        return Err(format!("Invalid date/duration format: {}. Expected format: '7d', '14d', '30d', 'YYYY-MM-DD', or ISO 8601 date-time", since).into());
     }
 
-    if DateTime::parse_from_rfc3339(since).is_ok() {
-        return Ok(since.to_string());
-    }
-
-    if let Ok(date) = chrono::NaiveDate::parse_from_str(since, "%Y-%m-%d") {
-        let datetime = date.and_hms_opt(0, 0, 0).ok_or("Invalid date")?.and_utc();
-        return Ok(datetime.to_rfc3339());
-    }
-
-    Err(format!("Invalid date/duration format: {}. Expected format: '7d', '14d', '30d', 'YYYY-MM-DD', or ISO 8601 date-time", since).into())
+    Ok(parsed_date.to_rfc3339())
 }
 
 #[cfg(test)]
@@ -85,11 +88,16 @@ mod tests {
     fn test_parse_since_iso8601_datetime() {
         let iso8601 = "2025-01-15T10:30:00Z";
         let result = parse_since(iso8601).unwrap();
-        assert_eq!(result, iso8601);
+        assert!(DateTime::parse_from_rfc3339(&result).is_ok());
+        // Verify the date/time is preserved (timezone format may vary)
+        assert!(result.contains("2025-01-15"));
+        assert!(result.contains("10:30:00"));
 
         let iso8601_with_offset = "2025-01-15T10:30:00+00:00";
         let result2 = parse_since(iso8601_with_offset).unwrap();
-        assert_eq!(result2, iso8601_with_offset);
+        assert!(DateTime::parse_from_rfc3339(&result2).is_ok());
+        assert!(result2.contains("2025-01-15"));
+        assert!(result2.contains("10:30:00"));
     }
 
     #[test]
@@ -114,9 +122,10 @@ mod tests {
 
     #[test]
     fn test_parse_since_negative_days() {
-        // Negative days should parse but result in a future date
-        let result = parse_since("-7d").unwrap();
-        assert!(DateTime::parse_from_rfc3339(&result).is_ok());
+        // Negative days should be rejected as they're confusing
+        assert!(parse_since("-7d").is_err());
+        assert!(parse_since("-1d").is_err());
+        assert!(parse_since("-100d").is_err());
     }
 
     #[test]
