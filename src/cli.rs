@@ -2,7 +2,7 @@ use clap::{Parser, Subcommand};
 
 #[derive(Parser)]
 #[command(name = "linearite")]
-#[command(about = "Tiny Linear CLI designed for AI agents", long_about = None)]
+#[command(about = "Tiny Linear CLI designed for common ops", long_about = None)]
 #[command(after_help = r#"
 EXAMPLES:
   # List all teams to get a team ID
