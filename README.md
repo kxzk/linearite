@@ -1,10 +1,13 @@
 # ◉ Linearite
 
-Tiny Linear CLI
-
-> Create issues without the 13k token MCP tax. Bonus: see who's shipping.
-
 ![rust](https://img.shields.io/badge/rust-%23CE422B?style=flat-square&logo=rust)
+
+> A _tiny_ Linear CLI
+
+<br>
+
+* Create issues without the 13k token MCP Tax
+* Bonus: see who's shipping
 
 <br>
 
@@ -30,16 +33,20 @@ Add to `~/.zshrc` for persistence.
 
 ### Usage
 
-**Discovery**
+_+ Discovery_
 
 ```bash
 linearite list-teams
 linearite list-projects
 ```
 
-**Create Issues**
+_+ Create Issues_
 
 ```bash
+# Flags
+# -t --team-id (team identifier)
+# -d --description (description of the issue)
+# -p --project (project identifier)
 linearite create "Fix API bug" --team-id team-abc123
 
 linearite create "Add feature X" \
@@ -47,8 +54,6 @@ linearite create "Add feature X" \
   --description "Detailed context" \
   --project-id proj-xyz789
 ```
-
-Flags: `-t` team, `-d` description, `-p` project
 
 ```
 ╔════════════════╗
@@ -60,21 +65,21 @@ Flags: `-t` team, `-d` description, `-p` project
  ⎇ eng-1234-fix-api-bug
 ```
 
-**Velocity Rankings**
+_+ Velocity Rankings_
 
 ```bash
+# Ranks by completed issue points. Defaults to last 14 days, top 10.
 linearite rank-teams
 linearite rank-users
 ```
 
-Ranks by completed issue points. Defaults to last 14 days, top 10.
-
 ```bash
+# Flags
+# -s --since (duration like `7d` or date like `2025-01-15`)
+# -t --top (top N results)
 linearite rank-teams --since 30d --top 5
 linearite rank-users --since 2025-01-01 --top 20
 ```
-
-Flags: `-s` since (duration like `7d` or date like `2025-01-15`), `-t` top N results
 
 ```
 ╔═════════════════════════════════════════════════════════════╗

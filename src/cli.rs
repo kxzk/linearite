@@ -16,6 +16,18 @@ EXAMPLES:
 
   # Create an issue with team ID, description, and project ID
   linearite create "Add new feature" --team-id abc123 --description "Implement feature X" --project-id xyz789
+
+  # Rank teams by completed issue points (defaults: last 14 days, top 10)
+  linearite rank-teams
+
+  # Rank teams with custom time period and top results
+  linearite rank-teams --since 30d --top 5
+
+  # Rank users by completed issue points (defaults: last 14 days, top 10)
+  linearite rank-users
+
+  # Rank users with custom date and top results
+  linearite rank-users --since 2025-01-01 --top 20
 "#)]
 pub struct Cli {
     #[command(subcommand)]
