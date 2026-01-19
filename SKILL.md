@@ -1,6 +1,7 @@
-# Linearite CLI Skill
-
-Use this skill to create Linear issues and check velocity rankings without the overhead of MCP integrations.
+---
+name: linearite
+description: CLI tool for creating Linear issues and checking velocity rankings
+---
 
 ## Setup
 
